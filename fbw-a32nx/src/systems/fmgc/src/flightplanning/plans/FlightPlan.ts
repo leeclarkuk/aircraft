@@ -1040,7 +1040,7 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
         // Add
         if (windEntries.length >= (climb ? this.maxClimbWindLevels : this.maxDescentWindLevels)) {
           // Special case is adding a PERF APPR wind when the maximum number of entries exists. In that case, we replace the lowest level
-          if (altitude ?? 0 <= (windEntries[windEntries.length - 1].altitude ?? 0)) {
+          if (!climb && (altitude ?? 0) <= (windEntries[windEntries.length - 1].altitude ?? 0)) {
             console.info(
               `[FPM] Replacing ${debugFormatWindEntry(windEntries[windEntries.length - 1])} by ${debugFormatWindEntry(entry)}`,
             );
