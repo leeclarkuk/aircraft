@@ -68,7 +68,8 @@ export class WindProfile implements WindInterface {
 
   getClimbWindForecast(altitude: Feet, result: WindVector): WindVector | TailwindComponent {
     const climbWindEntries = this.plan.performanceData.climbWindEntries.get();
-    const firstclimbWindEntry = climbWindEntries[0];
+    // The order of the climb winds depends on the aircraft, so look for the lowest entry rather than assuming the first.
+    const firstclimbWindEntry = WindUtils.getLowestEntry(climbWindEntries);
 
     const tripWind: TailwindComponent | null = this.plan.performanceData.pilotTripWind.get();
     const hasTripWindEntry = tripWind !== null;
@@ -390,7 +391,7 @@ export class ConstantWindProfile implements WindInterface {
 
   getClimbWindForecast(_distanceFromStart: NauticalMiles, altitude: Feet, result: WindVector): WindVector {
     const climbWindEntries = this.plan.performanceData.climbWindEntries.get();
-    const lowestClimbWindEntry = climbWindEntries[climbWindEntries.length - 1];
+    const lowestClimbWindEntry = WindUtils.getLowestEntry(climbWindEntries);
 
     if (lowestClimbWindEntry !== undefined && lowestClimbWindEntry.altitude !== undefined) {
       const lowestAltitude = lowestClimbWindEntry.altitude;
