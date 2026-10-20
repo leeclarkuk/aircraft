@@ -55,11 +55,13 @@ describe('cruise winds', () => {
       await fp.addCruiseWindEntry(1, windEntry(35_000));
       const handler = vi.fn();
       const sub = bus.getSubscriber<FlightPlanEvents>().on('flightPlan.setCruiseWinds').handle(handler);
+      const versionBefore = fp.version;
 
       await fp.deleteCruiseWindEntry(1, 35_000);
       sub.destroy();
 
       expect(cruiseWinds(fp, 1)).toEqual([]);
+      expect(fp.version).toBeGreaterThan(versionBefore);
       expect(handler).toHaveBeenCalledTimes(1);
       expect(handler.mock.calls[0][0]).toMatchObject({ atIndex: 1, newCruiseWinds: [] });
     });
@@ -73,9 +75,11 @@ describe('cruise winds', () => {
       expect(cruiseWinds(fp, 1)).toEqual([{ altitude: 35_000, magnitude: 20 }]);
       const handler = vi.fn();
       const sub = bus.getSubscriber<FlightPlanEvents>().on('flightPlan.setCruiseWinds').handle(handler);
+      const versionBefore = fp.version;
 
       await fp.deleteCruiseWindEntry(1, 35_000);
 
+      expect(fp.version).toBeGreaterThan(versionBefore);
       expect(fp.hasDraftWindEntries()).toBe(true);
       expect(cruiseWinds(fp, 1)).toEqual([{ altitude: 35_000, magnitude: 20 }]);
       expect(handler).not.toHaveBeenCalled();

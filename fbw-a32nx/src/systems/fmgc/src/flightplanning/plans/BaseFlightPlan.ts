@@ -3051,9 +3051,8 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
     }
     if (!hasDraft) {
       this.syncCruiseWindChange(atIndex);
-    } else {
-      this.incrementVersion();
     }
+    this.incrementVersion();
   }
 
   async editCruiseWindEntry(
