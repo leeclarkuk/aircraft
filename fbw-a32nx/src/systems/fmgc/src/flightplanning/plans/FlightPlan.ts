@@ -1040,7 +1040,7 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
         // Add
         if (windEntries.length >= (climb ? this.maxClimbWindLevels : this.maxDescentWindLevels)) {
           // Special case is adding a PERF APPR wind when the maximum number of entries exists. In that case, we replace the lowest level
-          if (altitude ?? 0 <= (windEntries[windEntries.length - 1].altitude ?? 0)) {
+          if (!climb && (altitude ?? 0) <= (windEntries[windEntries.length - 1].altitude ?? 0)) {
             console.info(
               `[FPM] Replacing ${debugFormatWindEntry(windEntries[windEntries.length - 1])} by ${debugFormatWindEntry(entry)}`,
             );
@@ -1093,6 +1093,7 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
       let existingAlternateDraft = this.alternateDraftWind.get();
       if (existingAlternateDraft === null) {
         existingAlternateDraft = { direction: undefined, magnitude: undefined };
+        this.alternateDraftWind.set(existingAlternateDraft);
       }
       const oldDir = existingAlternateDraft.direction;
       const oldMag = existingAlternateDraft.magnitude;
@@ -1257,7 +1258,7 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
     const hasDraftCruise = draftCruiseWind !== null;
     const hasDraftDescent = draftDescentWind !== null;
     const hasDraftAlternate = draftAlternateWind !== null;
-    if (hasDraftClimb && hasDraftCruise && hasDraftDescent && hasDraftAlternate) {
+    if (!hasDraftClimb && !hasDraftCruise && !hasDraftDescent && !hasDraftAlternate) {
       return;
     }
 
