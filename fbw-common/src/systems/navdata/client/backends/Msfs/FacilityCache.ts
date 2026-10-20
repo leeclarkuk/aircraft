@@ -17,6 +17,7 @@ import {
 import { Waypoint } from '../../../shared';
 import { ErrorLogger } from '../../../shared/types/ErrorLogger';
 import { SharedGlobal, SharedGlobalObjectRef } from '@microsoft/msfs-sdk';
+import { loadInBatches } from './loadInBatches';
 
 export enum LoadType {
   Airport = 'A',
@@ -120,9 +121,8 @@ export class FacilityCache {
       }
     }
 
-    // TODO break into batches of 100
     if (toFetch.length > 0) {
-      const results: boolean[] = await Coherent.call(LoadCall[loadType], toFetch);
+      const results = await loadInBatches(toFetch, (batch) => Coherent.call(LoadCall[loadType], batch));
       const successfulIcaos = toFetch.filter((_, i) => results[i]);
       if (successfulIcaos.length === 0) {
         return fetched;
