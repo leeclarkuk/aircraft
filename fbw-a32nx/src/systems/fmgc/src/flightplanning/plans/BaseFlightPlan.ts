@@ -3049,7 +3049,7 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
         legWindEntries.splice(i, 1);
       }
     }
-    if (hasDraft) {
+    if (!hasDraft) {
       this.syncCruiseWindChange(atIndex);
     } else {
       this.incrementVersion();
@@ -3128,7 +3128,13 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
             `[FMS/FPM] 4) Propagated wind entry exists on this leg. Editing ${debugFormatWindEntry(propagatedEntry)}`,
           );
 
-        const oldEntry = legWindEntries[entryIndex];
+        // entryIndex is an index into the propagated winds, which are sorted and include entries from other legs, so it
+        // cannot be used to index the entries of this leg. Find the leg's own entry at the same level instead.
+        const oldEntry = legWindEntries.find((e) =>
+          propagatedEntry.altitude === undefined
+            ? e.altitude === undefined
+            : e.altitude !== undefined && Math.round(e.altitude / 100) === Math.round(propagatedEntry.altitude / 100),
+        );
 
         if (oldEntry !== undefined) {
           if (isWindVectorComplete(oldEntry.vector) && isPartlyFilledWindVector(newEntry.vector)) {
