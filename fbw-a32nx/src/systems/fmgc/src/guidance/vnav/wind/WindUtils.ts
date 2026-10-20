@@ -74,19 +74,58 @@ export class WindUtils {
     v1: WindVector,
     out: WindVector,
   ): WindVector {
-    return copyWindVector(
-      {
-        direction:
-          v0.direction === undefined || v1.direction === undefined
-            ? undefined
-            : MathUtils.interpolate(x, x0, x1, v0.direction, v1.direction),
-        magnitude:
-          v0.magnitude === undefined || v1.magnitude === undefined
-            ? undefined
-            : MathUtils.interpolate(x, x0, x1, v0.magnitude, v1.magnitude),
-      },
-      out,
-    );
+    const magnitude =
+      v0.magnitude === undefined || v1.magnitude === undefined
+        ? undefined
+        : MathUtils.interpolate(x, x0, x1, v0.magnitude, v1.magnitude);
+
+    if (v0.direction === undefined || v1.direction === undefined) {
+      return WindUtils.setValues(magnitude, undefined, out);
+    }
+
+    // Interpolating the direction angle directly goes the wrong way around when the two directions are either side of
+    // north (e.g. halfway between 350 and 010 is 180). Interpolate the components of complete vectors instead.
+    if (isWindVectorComplete(v0) && isWindVectorComplete(v1)) {
+      const east = MathUtils.interpolate(
+        x,
+        x0,
+        x1,
+        v0.magnitude! * Math.sin(v0.direction),
+        v1.magnitude! * Math.sin(v1.direction),
+      );
+      const north = MathUtils.interpolate(
+        x,
+        x0,
+        x1,
+        v0.magnitude! * Math.cos(v0.direction),
+        v1.magnitude! * Math.cos(v1.direction),
+      );
+
+      if (east !== 0 || north !== 0) {
+        return WindUtils.setValues(Math.hypot(east, north), MathUtils.normalise2Pi(Math.atan2(east, north)), out);
+      }
+    }
+
+    // Partial vectors, or components which cancel out exactly. Take the shortest way round for the direction.
+    const directionDelta = MathUtils.normalisePi(v1.direction - v0.direction);
+    const direction = MathUtils.normalise2Pi(v0.direction + MathUtils.interpolate(x, x0, x1, 0, directionDelta));
+
+    return WindUtils.setValues(magnitude, direction, out);
+  }
+
+  /**
+   * Gets the entry with the lowest altitude, regardless of whether the entries are sorted in ascending or descending order.
+   * @param entries the wind entries.
+   * @returns the entry with the lowest altitude, or undefined if no entry has an altitude.
+   */
+  public static getLowestEntry<T extends WindEntry>(entries: readonly T[]): T | undefined {
+    let lowest: T | undefined = undefined;
+    for (const entry of entries) {
+      if (entry.altitude !== undefined && (lowest === undefined || entry.altitude < lowest.altitude!)) {
+        lowest = entry;
+      }
+    }
+    return lowest;
   }
 
   public static copyEmptyWindVector(result: WindVector) {

@@ -97,7 +97,8 @@ export function copyWindVector(source: WindVector, destination: WindVector): Win
 }
 
 export function scaleWindVector(vector: WindVector, scale: number, result: WindVector): WindVector {
-  result.direction = vector.direction !== undefined ? vector.direction * scale : undefined;
+  // Only the magnitude is scaled. The direction is an angle and has to stay the same.
+  result.direction = vector.direction;
   result.magnitude = vector.magnitude !== undefined ? vector.magnitude * scale : undefined;
   return result;
 }
