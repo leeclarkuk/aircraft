@@ -34,6 +34,7 @@ import {
   WindVector,
 } from '../data/wind';
 import { PendingWindUplink } from './PendingWindUplink';
+import { getDefaultTransitionLevel } from './TransitionLevel';
 import { WindUtils } from '../../guidance/vnav/wind/WindUtils';
 
 export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerformanceData> extends BaseFlightPlan<P> {
@@ -673,7 +674,7 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
     plan.setPerformanceData('pilotMissedAccelerationAltitude', null);
     plan.setPerformanceData('pilotMissedEngineOutAccelerationAltitude', null);
 
-    plan.setPerformanceData('databaseTransitionLevel', airport?.transitionLevel ?? null);
+    plan.setPerformanceData('databaseTransitionLevel', getDefaultTransitionLevel(airport));
 
     plan.deleteDescentWindEntries();
   }
